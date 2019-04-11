@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+
+  policyservice:
+    build: .
+    image: oapass/policy-service:latest
+    container_name: policyservice
+    env_file: .env
+    ports:
+      - "${POLICY_SERVICE_PORT}:${POLICY_SERVICE_PORT}"
+
+  fcrepo:
+    image: oapass/fcrepo:4.7.5-3.4@sha256:3e39b01edf56c149279cfc51b647df335c01f9ec38036f1724f337ae35d68fe8
+    container_name: fcrepo
+    env_file: .env
+    ports:
+      - "${FCREPO_PORT}:${FCREPO_PORT}"

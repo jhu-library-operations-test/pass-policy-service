@@ -1,0 +1,22 @@
+language: go
+
+env:
+  - GO111MODULE=on
+
+go:
+  - 1.12.x
+
+os: 
+  - linux
+
+services:
+  - docker
+
+install: true
+
+script:
+  - go build ./...
+  - docker-compose build policyservice
+  - docker-compose pull fcrepo && docker-compose up -d && bash ./scripts/wait_for_docker.sh
+  - go test -v -tags=integration ./... || docker logs policyservice 
+  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ ! -z ${DOCKER_USERNAME+x} ]; then sh ./scripts/docker-push.sh; fi'
