@@ -1,0 +1,141 @@
+{
+    "title": "PASS policy service schema 1.0",
+    "description": "Defines all possible metadata fields for PASS deposit",
+    "$id": "https://oa-pass.github.io/pass-policy-service/schemas/policy_dsl_1.0.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": [
+        "$schema",
+        "policy-rules"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "title": "DSL schema",
+            "description": "The schema applicable to a given DSL file."
+        },
+        "policy-rules": {
+            "type": "array",
+            "title": "Policy rules",
+            "description": "List of rules for determining policies applicable to a submission",
+            "items": {
+                "type": "object",
+                "required": [
+                    "policy-id",
+                    "repositories"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "title": "Description",
+                        "description": "Human-readable description of the policy ruke"
+                    },
+                    "policy-id": {
+                        "type": "string",
+                        "title": "Policy ID",
+                        "description": "ID (URI) of the PASS Policy resource referenced by this rule"
+                    },
+                    "repositories": {
+                        "type": "array",
+                        "title": "Repositories",
+                        "description": "List of repositories, where deposit to ONE of the repositories in the list shall satisfy the policy",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "repository-id"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "repository-id": {
+                                    "type": "string",
+                                    "title": "Repository ID",
+                                    "description": "ID (URI) of a PASS Repository"
+                                },
+                                "selected": {
+                                    "type": "boolean",
+                                    "title": "Description",
+                                    "description": "If true, the repository will be flagged as 'selected by default'"
+                                }
+                            }
+                        }
+                    },
+                    "conditions": {
+                        "type": "array",
+                        "title": "Conditions",
+                        "description": "Optional conditions that determine of the given policy applies",
+                        "additionalItems": false,
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/condition"
+                                },
+                                {
+                                    "$ref": "#/definitions/anyOf"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "condition": {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "endsWith"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "endsWith": {
+                            "type": "object",
+                            "title": "Ends With",
+                            "description": "Evaluates to 'true' when the key ends with the given value",
+                            "patternProperties": {
+                                "^.+$": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "equals"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "equals": {
+                            "type": "object",
+                            "title": "Equals",
+                            "description": "Evaluates to 'true' when the key equals given value",
+                            "patternProperties": {
+                                "^.+$": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "anyOf": {
+            "type": "object",
+            "title": "Any Of",
+            "description": "Evaluates to true when any of the conditions listed within evaluate to true (logical OR)",
+            "properties": {
+                "anyOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/condition"
+                    }
+                }
+            }
+        }
+    }
+}
