@@ -11,7 +11,7 @@ var fatalf = log.Fatalf
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "policies"
+	app.Name = "pass-policy-service"
 	app.Usage = "PASS policy service"
 	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{

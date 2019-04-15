@@ -20,7 +20,7 @@ func TestValidateCLI(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 
 			// Invoke the main function with args manually
-			os.Args = []string{"policies", "validate", c.file}
+			os.Args = []string{"pass-policy-service", "validate", c.file}
 
 			// If it exits in error, capture the error
 			var err error
