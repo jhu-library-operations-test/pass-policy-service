@@ -2,9 +2,11 @@ FROM golang:1.12-alpine AS builder
 
 RUN apk update && apk add --no-cache git
 
+ENV  GO111MODULE=on
 WORKDIR /root
 COPY . .
-RUN CGO_ENABLED=0 go build ./cmd/policies 
+RUN go generate ./... && \
+    CGO_ENABLED=0 go build ./cmd/policies 
 
 FROM alpine:3.9
 COPY --from=builder /root/policies /root/scripts /
