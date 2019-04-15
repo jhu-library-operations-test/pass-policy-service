@@ -1,0 +1,43 @@
+{
+    "$schema": "https://oa-pass.github.io/pass-policy-service/schemas/policy_config_1.0.json",
+    "policy-rules": [
+        {
+            "description": "Must deposit to one of the repositories indicated by primary funder",
+            "policy-id": "${submission.grants.primaryFunder.policy.id}",
+            "repositories": [
+                {
+                    "repository-id": "${policy.repositories.id}"
+                }
+            ]
+        },
+        {
+            "description": "Must deposit to one of the repositories indicated by direct funder",
+            "policy-id": "${submission.grants.directFunder.policy.id}",
+            "repositories": [
+                {
+                    "repository-id": "${policy.repositories.id}"
+                }
+            ]
+        },
+        {
+            "description": "Members of the JHU community must deposit into JScholarship, or some other repository.",
+            "policy-id": "policies/",
+            "conditions": [
+                {
+                    "fooBar": {
+                        "${header.Eppn}": "@johnshopkins.edu"
+                    }
+                }
+            ],
+            "repositories": [
+                {
+                    "repository-id": "http://passl.local/fcrepo/rest/repositories/j10p",
+                    "selected": true
+                },
+                {
+                    "repository-id": "*"
+                }
+            ]
+        }
+    ]
+}
