@@ -11,7 +11,7 @@ import (
 func TestValidateGoodData(t *testing.T) {
 	content, _ := ioutil.ReadFile("testdata/good.json")
 
-	err := rule.Validate(content)
+	_, err := rule.Validate(content)
 	if err != nil {
 		t.Fatalf("Validation failed: %+v", err)
 	}
@@ -29,7 +29,7 @@ func TestValidateBadData(t *testing.T) {
 	for name, content := range cases {
 		content := content
 		t.Run(name, func(t *testing.T) {
-			err := rule.Validate(content)
+			_, err := rule.Validate(content)
 			if err == nil {
 				t.Fatalf("Validation should have failed!")
 			}

@@ -71,11 +71,47 @@ func (c *Context) Resolve(vari string) ([]string, error) {
 			vals = append(vals, val.src)
 		}
 		return uniq(vals), nil
+	case []interface{}:
+		{
+			var vals []string
+			for _, val := range v {
+				str, ok := val.(string)
+				if ok {
+					vals = append(vals, str)
+				}
+			}
+			return uniq(vals), nil
+		}
 	case nil:
 		return []string{}, nil
 	}
 
 	return nil, errors.Errorf("variable %s resolved to a %T instead of a string", v.fullName, c.values[v.fullName])
+
+}
+
+func (c *Context) Pin(variable, value string) VariablePinner {
+	parsed, ok := toVariable(variable)
+	if !ok {
+		return c
+	}
+
+	pinnedValues := make(map[string]interface{}, len(c.values))
+	for k, v := range c.values {
+		pinnedValues[k] = v
+	}
+
+	segments := strings.Split(parsed.fullName, ".")
+
+	pinnedValues[parsed.fullName] = value
+	pinnedValues[segments[len(segments)-1]] = value
+
+	return &Context{
+		SubmissionURI: c.SubmissionURI,
+		Headers:       c.Headers,
+		PassClient:    c.PassClient,
+		values:        pinnedValues,
+	}
 
 }
 

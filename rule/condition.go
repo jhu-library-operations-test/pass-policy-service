@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -104,7 +103,6 @@ func eachPair(src interface{}, variables VariableResolver, test func(string, str
 			return false, errors.Errorf("given a %T instead of a string", src)
 		}
 
-		fmt.Printf("resolving %s and %s\n", a, b)
 		if a, err = singleValued(variables.Resolve(a)); err != nil {
 			return false, errors.Wrapf(err, "could not resolve variable %s", a)
 		}
@@ -130,7 +128,7 @@ func singleValued(list []string, err error) (string, error) {
 	}
 
 	if len(list) != 1 {
-		return "", errors.New("expecing single valued string")
+		return "", errors.Errorf("expecting single valued string, instead got %+v", list)
 	}
 
 	return list[0], nil

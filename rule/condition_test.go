@@ -9,8 +9,8 @@ import (
 
 func TestConditionApply(t *testing.T) {
 	variables := testResolver(map[string][]string{
-		"${one.spelled}": []string{"one"},
-		"${none}":        []string{},
+		"${one.spelled}": {"one"},
+		"${none}":        {},
 	})
 
 	cases := []struct {
@@ -113,7 +113,7 @@ func TestConditionErrors(t *testing.T) {
 				"equals": {"${bar}": "foo"}
 			}`,
 			resolver: testResolver(map[string][]string{
-				"${bar}": []string{"foo", "bar"},
+				"${bar}": {"foo", "bar"},
 			}),
 		},
 		"anyOf is not a list": {

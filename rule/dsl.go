@@ -1,8 +1,6 @@
 package rule
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 )
 
@@ -12,26 +10,17 @@ type DSL struct {
 	Policies []Policy `json:"policy-rules"`
 }
 
-// VariableResolver resolves a variable (a string of form "${foo.bar.baz}"), and returns
-// a list of values
-type VariableResolver interface {
-	Resolve(varString string) ([]string, error)
-}
-
 // Resolve parses a policy rules document into a set of concrete rules, with all
 // variables interpolated
-func Resolve(doc []byte, variables VariableResolver) ([]Policy, error) {
-	err := Validate(doc)
+func Resolve(doc []byte, variables VariablePinner) ([]Policy, error) {
+	rules, err := Validate(doc)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid input policy doc")
 	}
 
-	rules := &DSL{}
-	_ = json.Unmarshal(doc, rules)
-
 	var policies []Policy
 	for _, policy := range rules.Policies {
-		resolved, err := policy.resolve(variables)
+		resolved, err := policy.Resolve(variables)
 		if err != nil {
 			return policies, errors.Wrapf(err, "could not resolve policy rule")
 		}

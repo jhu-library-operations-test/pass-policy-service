@@ -12,16 +12,16 @@ type Policy struct {
 	Conditions   []Condition  `json:"conditions"`
 }
 
-// resolve interpolates any variables in a policy.  if the policy ID resolves to a list,
+// Resolve interpolates any variables in a policy.  if the policy ID resolves to a list,
 // it returns a list of resolved policies, each one with an ID from that list.
-func (p Policy) resolve(vaiables VariableResolver) (policies []Policy, err error) {
+func (p Policy) Resolve(variables VariablePinner) (policies []Policy, err error) {
 
 	var resolvedPolicies []Policy
 
 	// If the policy ID is a variable, we need to resolve/expand it.  If the result is
 	// a list of IDs, we return a list of policies, each one with an ID from the list
 	if IsVariable(p.ID) {
-		resolvedIDs, err := vaiables.Resolve(p.ID)
+		resolvedIDs, err := variables.Resolve(p.ID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not resolve property ID %s", p.ID)
 		}
@@ -30,12 +30,16 @@ func (p Policy) resolve(vaiables VariableResolver) (policies []Policy, err error
 
 			// Now that we have a concrete ID, resolve any other variables elsewhere in the
 			// policy.  Some of them may depend on knowing the ID we just found
+			//
+			// We take a shortcut by pinning only the ID variable, meaning ${foo.bar.baz.id} is pinned,
+			// but ${foo.bar} wouldn't be.  We could walk up the chain of variable segments to pin
+			// the entire path to the id property, but that doesn't seem necessary.
 			resolved, err := Policy{
 				ID:           id,
 				Description:  p.Description,
 				Repositories: p.Repositories,
 				Conditions:   p.Conditions,
-			}.resolve(vaiables)
+			}.Resolve(variables.Pin(p.ID, id))
 
 			if err != nil {
 				return nil, errors.Wrapf(err, "could not resolve policy rule for %s", id)
@@ -47,18 +51,22 @@ func (p Policy) resolve(vaiables VariableResolver) (policies []Policy, err error
 
 		// Individual policy.  Resolve the repositories section, and filter by condition to see if
 		// it is applicable
-		resolvedPolicies = []Policy{p}
 
-		if p.Repositories, err = p.resolveRepositories(vaiables); err != nil {
+		p.Repositories, err = p.resolveRepositories(variables)
+		if err != nil {
 			return nil, errors.Wrapf(err, "could not resolve repositories in policy %s", p.ID)
 		}
 
-		if ok, err := p.applyConditions(vaiables); ok && err != nil {
-			resolvedPolicies = append(resolvedPolicies)
+		ok, err := p.applyConditions(variables)
+		if ok && err == nil {
+			resolvedPolicies = append(resolvedPolicies, p)
+		}
+		if err != nil {
+			return nil, errors.Wrapf(err, "error applying conditions to policy %s", p.ID)
 		}
 	}
 
-	return resolvedPolicies, nil
+	return resolvedPolicies, err
 }
 
 // resolveRepositories replaces any variables in the repository section of a policy.  If repository ID
@@ -79,7 +87,8 @@ func (p Policy) resolveRepositories(variables VariableResolver) ([]Repository, e
 // Filter based on evaluating conditions, if there are any
 func (p Policy) applyConditions(variables VariableResolver) (bool, error) {
 	for _, cond := range p.Conditions {
-		if ok, err := cond.Apply(variables); !ok || err != nil {
+		ok, err := cond.Apply(variables)
+		if !ok || err != nil {
 			return ok, err
 		}
 	}

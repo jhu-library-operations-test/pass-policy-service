@@ -12,6 +12,18 @@ type variable struct {
 	fullName    string // e.g. "foo.bar.baz" from ${foo.bar.baz}
 }
 
+// VariableResolver resolves a variable (a string of form "${foo.bar.baz}"), and returns
+// a list of values
+type VariableResolver interface {
+	Resolve(varString string) ([]string, error)
+}
+
+// VariablePinner is a variable resolver that can pin variables to specific values
+type VariablePinner interface {
+	VariableResolver
+	Pin(variable, value string) VariablePinner // return a VariablePinner that pins a variable to the given value
+}
+
 type passThroughResolver struct{}
 
 func (passThroughResolver) Resolve(varString string) ([]string, error) {
