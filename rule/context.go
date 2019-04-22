@@ -46,7 +46,7 @@ func (c *Context) Resolve(vari string) ([]string, error) {
 
 	v, ok := toVariable(vari)
 	if !ok {
-		return nil, errors.Errorf("'%s' is not a variable of the form ${foo.bar.baz}", vari)
+		return []string{vari}, nil
 	}
 
 	// Resolve each part of the variable (e.g. a, a.b, a.b.c, a.b.c.d)
@@ -272,7 +272,7 @@ func (c *Context) resolveToObjects(v variable, vals []string) error {
 }
 
 func uniq(vals []string) []string {
-	var uniqueVals []string
+	uniqueVals := []string{}
 	encountered := make(map[string]bool, len(vals))
 
 	for _, str := range vals {

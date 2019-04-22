@@ -8,12 +8,6 @@ import (
 	"github.com/oa-pass/pass-policy-service/rule"
 )
 
-type testResolver map[string][]string
-
-func (t testResolver) Resolve(varString string) ([]string, error) {
-	return t[varString], nil
-}
-
 func TestResolveRepository(t *testing.T) {
 	cases := []struct {
 		testName   string

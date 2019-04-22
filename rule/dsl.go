@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Document encapsulates to a policy rules document
-type Document struct {
+// DSL encapsulates to a policy rules document
+type DSL struct {
 	Schema   string   `json:"$schema"`
 	Policies []Policy `json:"policy-rules"`
 }
@@ -26,7 +26,7 @@ func Resolve(doc []byte, variables VariableResolver) ([]Policy, error) {
 		return nil, errors.Wrapf(err, "invalid input policy doc")
 	}
 
-	rules := &Document{}
+	rules := &DSL{}
 	_ = json.Unmarshal(doc, rules)
 
 	var policies []Policy

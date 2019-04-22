@@ -1,27 +1,12 @@
 package rule_test
 
 import (
-	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/go-test/deep"
 	"github.com/oa-pass/pass-policy-service/rule"
 )
-
-// map of urls to json strings
-type testFetcher map[string]string
-
-// deserialize the json string into the given entity pointer
-func (f testFetcher) FetchEntity(url string, entityPointer interface{}) error {
-	jsonBlob, ok := f[url]
-	if !ok {
-		return fmt.Errorf("no value for key %s", url)
-	}
-
-	return json.Unmarshal([]byte(jsonBlob), entityPointer)
-}
 
 func TestContextResolve(t *testing.T) {
 	submissionURI := "http://example.org/submissionUri"
@@ -33,8 +18,22 @@ func TestContextResolve(t *testing.T) {
 		varName       string
 		expectedValue []string
 	}{{
+		testName:      "notVariable",
+		varName:       "$moo",
+		expectedValue: []string{"$moo"},
+	}, {
 		testName: "noValue",
 		varName:  "${submission.baz}",
+		fetcher: map[string]string{
+			submissionURI: `{
+				"foo":"bar",
+				"not":"used"
+			}`,
+		},
+		expectedValue: []string{},
+	}, {
+		testName: "noValueMulti",
+		varName:  "${submission.baz.foo}",
 		fetcher: map[string]string{
 			submissionURI: `{
 				"foo":"bar",
@@ -84,6 +83,21 @@ func TestContextResolve(t *testing.T) {
 			}`,
 		},
 		expectedValue: []string{"http://example.org/baz"},
+	}, {
+		testName: "traverseSingleObjectsMultiHop",
+		varName:  "${submission.foo.bar.baz}",
+		fetcher: map[string]string{
+			submissionURI: `{
+				"foo": "https:/example.org/foo/1" 
+			}`,
+			"https:/example.org/foo/1": `{
+				"bar": "http://example.org/baz"
+			}`,
+			"http://example.org/baz": `{
+				"baz": "http://example.org/awesome"
+			}`,
+		},
+		expectedValue: []string{"http://example.org/awesome"},
 	}, {
 		testName: "traverseSingleListObjects",
 		varName:  "${submission.foo.bar}",
@@ -173,6 +187,8 @@ func TestContextMultipleResolve(t *testing.T) {
 		"${submission.foo}",
 		"${submission.foo.moo}",
 		"${submission.foo.bar.rhubarb}",
+		"${submission.single.value}",
+		"${submission.single}",
 	}
 
 	expectedValues := []interface{}{
@@ -183,6 +199,8 @@ func TestContextMultipleResolve(t *testing.T) {
 		},
 		[]string{"cow"},
 		[]string{"a", "b", "c", "d", "e"},
+		[]string{"moo"},
+		[]string{"http://example.org/single"},
 	}
 
 	fetcher := testFetcher(map[string]string{
@@ -190,8 +208,12 @@ func TestContextMultipleResolve(t *testing.T) {
 				"foo": [
 					"http:/example.org/foo/1",
 					"http:/example.org/foo/2"
-				]
+				],
+				"single": "http://example.org/single"
 			}`,
+		"http://example.org/single": `{
+			"value": "moo"
+		}`,
 		"http:/example.org/foo/1": `{
 				"bar": [
 					"http:/example.org/bar/1",
@@ -243,6 +265,90 @@ func TestContextMultipleResolve(t *testing.T) {
 			diffs := deep.Equal(vals, expectedValues[i])
 			if len(diffs) != 0 {
 				t.Fatalf("Found differences in expected values: %s", strings.Join(diffs, "\n"))
+			}
+		})
+	}
+}
+
+func TestContextErrors(t *testing.T) {
+	submissionURI := "http://example.org/submission"
+
+	cases := []struct {
+		testName string
+		fetcher  rule.PassEntityFetcher
+		headers  map[string][]string
+		varName  string
+	}{{
+		testName: "bad ubmission URI",
+		fetcher:  testFetcher(nil),
+		varName:  "${submission.foo}",
+	}, {
+		testName: "not a URI",
+		varName:  "${submission.foo.bar}",
+		fetcher: testFetcher(map[string]string{
+			submissionURI: `{
+				"foo": ["moo"] 
+			}`,
+		}),
+	}, {
+		testName: "not a String",
+		varName:  "${submission.foo}",
+		fetcher: testFetcher(map[string]string{
+			submissionURI: `{
+					"foo": {"bar": "baz"}
+				}`,
+		}),
+	}, {
+		testName: "heterogeneous List",
+		varName:  "${submission.foo.bar}",
+		fetcher: testFetcher(map[string]string{
+			submissionURI: `{
+					"foo": [
+						"http://example.org/whatever",
+						14.8
+					]
+				}`,
+		}),
+	}, {
+		testName: "bad JSON",
+		varName:  "${submission.foo.bar.baz}",
+		fetcher: testFetcher(map[string]string{
+			submissionURI: `{
+					"foo": [
+						"http://example.org/bar"
+					
+				}`,
+			"http://example.org/bar": `{
+				"baz": "hello"
+				"foo": "bar"
+			}`,
+		}),
+	}, {
+		testName: "does not resolve",
+		varName:  "${submission.foo.bar}",
+		fetcher:  errFetcher{},
+	}, {
+		testName: "unexpected type",
+		varName:  "${submission.foo.bar}",
+		fetcher: testFetcher(map[string]string{
+			submissionURI: `{
+					"foo": 7.4
+				}`,
+		}),
+	}}
+
+	for _, c := range cases {
+		c := c
+		t.Run(c.testName, func(t *testing.T) {
+			cxt := rule.Context{
+				SubmissionURI: submissionURI,
+				PassClient:    c.fetcher,
+				Headers:       c.headers,
+			}
+
+			_, err := cxt.Resolve(c.varName)
+			if err == nil {
+				t.Fatalf("Should have exited with an error")
 			}
 		})
 	}

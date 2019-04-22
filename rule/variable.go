@@ -12,6 +12,12 @@ type variable struct {
 	fullName    string // e.g. "foo.bar.baz" from ${foo.bar.baz}
 }
 
+type passThroughResolver struct{}
+
+func (passThroughResolver) Resolve(varString string) ([]string, error) {
+	return []string{varString}, nil
+}
+
 // IsVariable determines if a string is a variable (e.g. of the form '${foo.bar.baz}')
 func IsVariable(text string) bool {
 	return strings.HasPrefix(text, "${") &&

@@ -51,7 +51,7 @@ func Validate(rulesDoc []byte) error {
 	}
 
 	// Serialize just to defend against programmer error
-	rules := Document{}
+	rules := DSL{}
 	decoder := json.NewDecoder(bytes.NewReader(rulesDoc))
 	decoder.DisallowUnknownFields()
 

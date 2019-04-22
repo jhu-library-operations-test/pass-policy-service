@@ -25,7 +25,7 @@
             "conditions": [
                 {
                     "endsWith": {
-                        "${header.Eppn}": "@johnshopkins.edu"
+                        "@johnshopkins.edu": "${header.Eppn}"
                     }
                 }
             ],
