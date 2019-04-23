@@ -28,6 +28,13 @@ If successful, it will print out a message and exit with code 0.
 
 If not successful, it will print out validation errors and terminate with a nonzero code
 
+## Configuration
+
+Configuration is provided via a policy rules DSL file.  This is a JSON document that containes rules which govern which policies apply to a given
+submission.  Documentation can be found in [its concrete design doc](https://docs.google.com/document/d/1cPNN9TFUCLX-4yVoRuhmM0Vcrh3WYWNs-rwAszuJWXk/edit#heading=h.sae8awmp6ter)
+
+An example of such configuration file can be found in the [test data](rule/testdata/good.json)
+
 ## Building
 
 Building the policy service requires go 1.12 or later.
