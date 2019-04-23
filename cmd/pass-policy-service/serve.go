@@ -2,7 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
+	"net/http"
 
+	"github.com/oa-pass/pass-policy-service/web"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -63,5 +69,43 @@ func serve() cli.Command {
 }
 
 func serveAction(opts serveOpts, args []string) error {
-	return fmt.Errorf("not implemented")
+
+	if len(args) != 1 {
+		return fmt.Errorf("expecting exactly one argument: the rules doc file")
+	}
+
+	var credentials *web.Credentials
+	if opts.username != "" {
+		credentials = &web.Credentials{
+			Username: opts.username,
+			Password: opts.passwd,
+		}
+	}
+
+	rules, err := ioutil.ReadFile(args[0])
+	if err != nil {
+		return fmt.Errorf("error reading %s: %s", args[0], err.Error())
+	}
+
+	policyService, err := web.NewPolicyService(rules, &web.InternalPassClient{
+		Requester:       &http.Client{},
+		ExternalBaseURI: opts.publicBaseURI,
+		InternalBaseURI: opts.privateBaseURI,
+		Credentials:     credentials,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "could not initialize policy service")
+	}
+
+	http.HandleFunc("/policies", policyService.RequestPolicies)
+
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", opts.port))
+	if err != nil {
+		return err
+	}
+
+	opts.port = listener.Addr().(*net.TCPAddr).Port
+	log.Printf("Listening on port %d", opts.port)
+
+	return http.Serve(listener, nil)
 }
