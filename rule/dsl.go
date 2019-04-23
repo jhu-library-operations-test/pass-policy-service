@@ -10,16 +10,13 @@ type DSL struct {
 	Policies []Policy `json:"policy-rules"`
 }
 
-// Resolve parses a policy rules document into a set of concrete rules, with all
-// variables interpolated
-func Resolve(doc []byte, variables VariablePinner) ([]Policy, error) {
-	rules, err := Validate(doc)
-	if err != nil {
-		return nil, errors.Wrapf(err, "invalid input policy doc")
-	}
+type PolicyResolver interface {
+	Resolve(variables VariablePinner) ([]Policy, error)
+}
 
+func (d *DSL) Resolve(variables VariablePinner) ([]Policy, error) {
 	var policies []Policy
-	for _, policy := range rules.Policies {
+	for _, policy := range d.Policies {
 		resolved, err := policy.Resolve(variables)
 		if err != nil {
 			return policies, errors.Wrapf(err, "could not resolve policy rule")

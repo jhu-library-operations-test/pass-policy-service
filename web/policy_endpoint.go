@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/oa-pass/pass-policy-service/rule"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -21,18 +20,10 @@ func (p *policyEndpoint) findPolicies(submission string, headers map[string][]st
 	context := &rule.Context{
 		SubmissionURI: submission,
 		Headers:       headers,
-		PassClient:    p.fetcher,
-	}
-	policies := make([]rule.Policy, 0, len(p.rules.Policies)*2)
-	for _, policy := range p.rules.Policies {
-		resolved, err := policy.Resolve(context)
-		if err != nil {
-			return nil, errors.Wrapf(err, "could not resolve policies for submission %s", submission)
-		}
-		policies = append(policies, resolved...)
+		PassClient:    p.Fetcher,
 	}
 
-	return policies, nil
+	return p.Rules.Resolve(context)
 }
 
 func (p *policyEndpoint) sendPolicies(w http.ResponseWriter, r *http.Request, policies []rule.Policy, err error) {

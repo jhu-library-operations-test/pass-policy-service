@@ -8,15 +8,16 @@ import (
 )
 
 type PolicyService struct {
-	rules   *rule.DSL
-	fetcher rule.PassEntityFetcher
+	Rules   rule.PolicyResolver
+	Fetcher rule.PassEntityFetcher
 }
 
 func NewPolicyService(rulesDoc []byte, fetcher rule.PassEntityFetcher) (service PolicyService, err error) {
 
-	service = PolicyService{fetcher: fetcher}
-	service.rules, err = rule.Validate(rulesDoc)
+	service = PolicyService{Fetcher: fetcher}
+	service.Rules, err = rule.Validate(rulesDoc)
 	if err != nil {
+
 		return service, errors.Wrapf(err, "could not validate rules dsl")
 	}
 

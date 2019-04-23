@@ -44,7 +44,9 @@ func TestDSL(t *testing.T) {
 		]
 	}`
 
-	policies, err := rule.Resolve([]byte(json), &rule.Context{
+	dsl, _ := rule.Validate([]byte(json))
+
+	policies, err := dsl.Resolve(&rule.Context{
 		SubmissionURI: submissionURI,
 		PassClient: testFetcher(map[string]string{
 			submissionURI: `{
