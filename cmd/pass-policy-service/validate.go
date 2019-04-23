@@ -39,7 +39,7 @@ func validateAction(args []string) error {
 		return errors.Wrapf(err, "error opening file")
 	}
 
-	err = rule.Validate(content)
+	_, err = rule.Validate(content)
 	if err == nil {
 		log.Println("Validation OK")
 	}

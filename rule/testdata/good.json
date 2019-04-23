@@ -3,19 +3,19 @@
     "policy-rules": [
         {
             "description": "Must deposit to one of the repositories indicated by primary funder",
-            "policy-id": "${submission.grants.primaryFunder.policy.id}",
+            "policy-id": "${submission.grants.primaryFunder.policy}",
             "repositories": [
                 {
-                    "repository-id": "${policy.repositories.id}"
+                    "repository-id": "${policy.repositories}"
                 }
             ]
         },
         {
             "description": "Must deposit to one of the repositories indicated by direct funder",
-            "policy-id": "${submission.grants.directFunder.policy.id}",
+            "policy-id": "${submission.grants.directFunder.policy}",
             "repositories": [
                 {
-                    "repository-id": "${policy.repositories.id}"
+                    "repository-id": "${policy.repositories}"
                 }
             ]
         },
@@ -25,7 +25,7 @@
             "conditions": [
                 {
                     "endsWith": {
-                        "${header.Eppn}": "@johnshopkins.edu"
+                        "@johnshopkins.edu": "${header.Eppn}"
                     }
                 }
             ],
