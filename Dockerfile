@@ -9,7 +9,8 @@ RUN go generate ./... && \
     CGO_ENABLED=0 go build ./cmd/pass-policy-service
 
 FROM alpine:3.9
-COPY --from=builder /root/pass-policy-service /root/scripts /
+ENV POLICY_FILE=docker.json
+COPY --from=builder /root/pass-policy-service /root/scripts /root/policies /
 
 RUN chmod 700 /entrypoint.sh
 
