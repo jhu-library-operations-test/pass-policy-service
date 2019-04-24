@@ -8,6 +8,7 @@ import (
 type Policy struct {
 	ID           string       `json:"policy-id"`
 	Description  string       `json:"description"`
+	Type         string       `json:"type"`
 	Repositories []Repository `json:"repositories"`
 	Conditions   []Condition  `json:"conditions"`
 }
@@ -39,6 +40,7 @@ func (p Policy) Resolve(variables VariablePinner) (policies []Policy, err error)
 				Description:  p.Description,
 				Repositories: p.Repositories,
 				Conditions:   p.Conditions,
+				Type:         p.Type,
 			}.Resolve(variables.Pin(p.ID, id))
 
 			if err != nil {

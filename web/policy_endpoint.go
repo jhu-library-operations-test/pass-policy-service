@@ -16,6 +16,13 @@ type policyEndpoint struct {
 	*PolicyService
 }
 
+// PolicyResult is an item returned in a policy service response, indicating a policy ID, and
+// an originating type (funder, institution)
+type PolicyResult struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
+}
+
 func (p *policyEndpoint) findPolicies(submission string, headers map[string][]string) ([]rule.Policy, error) {
 	context := &rule.Context{
 		SubmissionURI: submission,
@@ -33,9 +40,17 @@ func (p *policyEndpoint) sendPolicies(w http.ResponseWriter, r *http.Request, po
 		return
 	}
 
+	var results []PolicyResult
+	for _, policy := range policies {
+		results = append(results, PolicyResult{
+			ID:   policy.ID,
+			Type: policy.Type,
+		})
+	}
+
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
-	err = encoder.Encode(policies)
+	err = encoder.Encode(results)
 	if err != nil {
 		log.Printf("error encoding JSON response: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

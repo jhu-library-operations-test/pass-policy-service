@@ -23,7 +23,8 @@
                 "type": "object",
                 "required": [
                     "policy-id",
-                    "repositories"
+                    "repositories",
+                    "type"
                 ],
                 "additionalProperties": false,
                 "properties": {
@@ -36,6 +37,12 @@
                         "type": "string",
                         "title": "Policy ID",
                         "description": "ID (URI) of the PASS Policy resource referenced by this rule"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "policy origin",
+                        "description": "Indicates whether this is a funder-originating policy, or an institution-originating",
+                        "enum": ["funder", "institution"]
                     },
                     "repositories": {
                         "type": "array",

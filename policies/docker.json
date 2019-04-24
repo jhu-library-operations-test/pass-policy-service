@@ -4,6 +4,7 @@
         {
             "description": "Must deposit to one of the repositories indicated by primary funder",
             "policy-id": "${submission.grants.primaryFunder.policy}",
+            "type": "funder",
             "repositories": [
                 {
                     "repository-id": "${policy.repositories}"
@@ -13,6 +14,7 @@
         {
             "description": "Must deposit to one of the repositories indicated by direct funder",
             "policy-id": "${submission.grants.directFunder.policy}",
+            "type": "funder",
             "repositories": [
                 {
                     "repository-id": "${policy.repositories}"
@@ -22,6 +24,7 @@
         {
             "description": "Members of the JHU community must deposit into JScholarship, or some other repository.",
             "policy-id": "policies/",
+            "type": "institution",
             "conditions": [
                 {
                     "endsWith": {

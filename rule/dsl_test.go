@@ -17,6 +17,7 @@ func TestDSL(t *testing.T) {
 			{
 				"description": "Used for unit testing",
 				"policy-id": "${submission.foo.policy}",
+				"type": "funder",
 				"conditions": [
 					{
 						"endsWith": {
@@ -34,6 +35,7 @@ func TestDSL(t *testing.T) {
 			{
 				"description": "Used for unit testing",
 				"policy-id": "http://example.org/policy",
+				"type": "funder",
 				"repositories": [
 					{
 						"repository-id": "http://example.org/repository",
@@ -44,7 +46,10 @@ func TestDSL(t *testing.T) {
 		]
 	}`
 
-	dsl, _ := rule.Validate([]byte(json))
+	dsl, err := rule.Validate([]byte(json))
+	if err != nil {
+		t.Fatalf("rules failed validation %+v", err)
+	}
 
 	policies, err := dsl.Resolve(&rule.Context{
 		SubmissionURI: submissionURI,
