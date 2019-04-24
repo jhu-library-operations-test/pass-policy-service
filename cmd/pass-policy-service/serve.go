@@ -97,6 +97,10 @@ func serveAction(opts serveOpts, args []string) error {
 		return errors.Wrapf(err, "could not initialize policy service")
 	}
 
+	policyService.Replace = map[string]string{
+		opts.privateBaseURI: opts.publicBaseURI,
+	}
+
 	http.HandleFunc("/policies", policyService.RequestPolicies)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", opts.port))

@@ -43,7 +43,7 @@ func (p *policyEndpoint) sendPolicies(w http.ResponseWriter, r *http.Request, po
 	var results []PolicyResult
 	for _, policy := range policies {
 		results = append(results, PolicyResult{
-			ID:   policy.ID,
+			ID:   p.replace(policy.ID),
 			Type: policy.Type,
 		})
 	}
