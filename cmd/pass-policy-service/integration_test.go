@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"net/url"
 
 	"github.com/oa-pass/pass-policy-service/rule"
 )
@@ -36,7 +37,7 @@ func TestFedoraIntegration(t *testing.T) {
 
 	submission := fedora.submission("submissions/foo", []string{nihGrant, decGrant})
 
-	get, _ := http.NewRequest(http.MethodGet, policyServiceURI()+"/policies?submission="+submission, nil)
+	get, _ := http.NewRequest(http.MethodGet, policyServiceURI()+"/policies?submission="+url.QueryEscape(submission), nil)
 	get.Header.Set("Eppn", "someone@johnshopkins.edu")
 
 	resp, err := client.Do(get)
