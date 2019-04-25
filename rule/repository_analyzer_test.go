@@ -8,9 +8,10 @@ import (
 	"github.com/oa-pass/pass-policy-service/rule"
 )
 
+var emptyRepos = []rule.Repository{}
+var emptyRepoList = [][]rule.Repository{}
+
 func TestAnalyzeRequirements(t *testing.T) {
-	emptyRepos := []rule.Repository{}
-	emptyRepoList := [][]rule.Repository{}
 
 	cases := []struct {
 		testName string
@@ -198,6 +199,106 @@ func TestAnalyzeRequirements(t *testing.T) {
 			diffs := deep.Equal(analyzed, c.expected)
 			if len(diffs) > 0 {
 				t.Fatalf("did not get expected results: %s\n%+v", strings.Join(diffs, "\n"), analyzed)
+			}
+		})
+	}
+}
+
+func TestElide(t *testing.T) {
+	cases := []struct {
+		testName     string
+		keep         []rule.Repository
+		requirements *rule.Requirements
+		expected     *rule.Requirements
+	}{{
+		testName: "keep b from a and (c or d) optional b -> optional b",
+		keep: []rule.Repository{
+			{ID: "b"},
+		},
+		requirements: &rule.Requirements{
+			Required: []rule.Repository{
+				{ID: "a"},
+			},
+			OneOf: [][]rule.Repository{{
+				{ID: "c"},
+				{ID: "d"},
+			}},
+			Optional: []rule.Repository{
+				{ID: "b"},
+			},
+		},
+		expected: &rule.Requirements{
+			Required: emptyRepos,
+			OneOf:    emptyRepoList,
+			Optional: []rule.Repository{
+				{ID: "b"},
+			},
+		},
+	}, {
+		testName: "keep {a, b} from c and (a or d) and (b or d) -> optional a, b",
+		keep: []rule.Repository{
+			{ID: "a"},
+			{ID: "b"},
+		},
+		requirements: &rule.Requirements{
+			Required: []rule.Repository{
+				{ID: "c"},
+			},
+			OneOf: [][]rule.Repository{{
+				{ID: "a"},
+				{ID: "d"},
+			}, {
+				{ID: "b"},
+				{ID: "d"},
+			}},
+			Optional: emptyRepos,
+		},
+		expected: &rule.Requirements{
+			Required: emptyRepos,
+			OneOf:    emptyRepoList,
+			Optional: []rule.Repository{
+				{ID: "a"},
+				{ID: "b"},
+			},
+		},
+	}, {
+		testName: "keep {a, b, c} from a and (b or c) optional d -> a and (b or c)",
+		keep: []rule.Repository{
+			{ID: "a"},
+			{ID: "b"},
+			{ID: "c"},
+		},
+		requirements: &rule.Requirements{
+			Required: []rule.Repository{
+				{ID: "a"},
+			},
+			OneOf: [][]rule.Repository{{
+				{ID: "b"},
+				{ID: "c"},
+			}},
+			Optional: []rule.Repository{
+				{ID: "d"},
+			},
+		},
+		expected: &rule.Requirements{
+			Required: []rule.Repository{
+				{ID: "a"},
+			},
+			OneOf: [][]rule.Repository{{
+				{ID: "b"},
+				{ID: "c"},
+			}},
+			Optional: emptyRepos,
+		},
+	}}
+
+	for _, c := range cases {
+		c := c
+		t.Run(c.testName, func(t *testing.T) {
+			elided := c.requirements.Elide(c.keep)
+			diffs := deep.Equal(elided, c.expected)
+			if len(diffs) > 0 {
+				t.Fatalf("did not get expected results: %s\n%+v", strings.Join(diffs, "\n"), elided)
 			}
 		})
 	}

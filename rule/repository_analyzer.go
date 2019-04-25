@@ -13,6 +13,65 @@ type Requirements struct {
 	Optional []Repository
 }
 
+// Elide removes any repositories that are not in the keep list)
+// Such repositories are presumed to have been deposited to by some means outside of pass.
+// For example,  for requirements OneOf: {a, b} with keep {a}, the result is Optional {a}
+func (r *Requirements) Elide(keep []Repository) *Requirements {
+
+	requirements := &Requirements{}
+
+	shouldKeep := make(map[string]bool, len(keep))
+
+	for _, repo := range keep {
+		shouldKeep[repo.ID] = true
+	}
+
+	// Simply remove any elided required repositories
+	for _, repo := range r.Required {
+		if shouldKeep[repo.ID] {
+			requirements.Required = append(requirements.Required, repo)
+		}
+	}
+
+	// remove elided repos from OneOf, and demote the remainders to optional
+	var discard []Repository
+	if len(r.OneOf) > 0 {
+		for _, list := range r.OneOf {
+			for _, repo := range list {
+				if !repoListContains(keep, repo) {
+					discard = append(discard, repo)
+				}
+			}
+		}
+
+		if len(discard) == 0 {
+			requirements.OneOf = r.OneOf
+		} else {
+			for _, list := range r.OneOf {
+				if !repoListContainsAny(list, discard) {
+					requirements.OneOf = append(requirements.OneOf, list)
+					continue
+				}
+
+				for _, member := range list {
+					if repoListContains(keep, member) {
+						requirements.Optional = append(requirements.Optional, member)
+					}
+				}
+			}
+		}
+	}
+
+	// Simply remove elided repositories from optional
+	for _, repo := range r.Optional {
+		if shouldKeep[repo.ID] {
+			requirements.Optional = append(requirements.Optional, repo)
+		}
+	}
+
+	return normalize(requirements)
+}
+
 // AnalyzeRequirements analyzes a list of policies, and returns
 // repository requirements
 func AnalyzeRequirements(policies []Policy) *Requirements {
@@ -185,6 +244,17 @@ func repoListContains(list []Repository, repo Repository) bool {
 	for _, member := range list {
 		if member.ID == repo.ID {
 			return true
+		}
+	}
+	return false
+}
+
+func repoListContainsAny(list, stuff []Repository) bool {
+	for _, member := range list {
+		for _, thing := range stuff {
+			if member.ID == thing.ID {
+				return true
+			}
 		}
 	}
 	return false
