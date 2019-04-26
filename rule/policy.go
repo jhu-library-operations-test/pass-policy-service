@@ -68,7 +68,7 @@ func (p Policy) Resolve(variables VariablePinner) (policies []Policy, err error)
 		}
 	}
 
-	return resolvedPolicies, err
+	return uniquePolicies(resolvedPolicies), err
 }
 
 // resolveRepositories replaces any variables in the repository section of a policy.  If repository ID
@@ -96,4 +96,22 @@ func (p Policy) applyConditions(variables VariableResolver) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func uniquePolicies(policies []Policy) []Policy {
+
+	if len(policies) < 2 {
+		return policies
+	}
+
+	unique := make([]Policy, 0, len(policies))
+	encountered := make(map[string]bool, len(policies))
+	for _, policy := range policies {
+		if !encountered[policy.ID] {
+			unique = append(unique, policy)
+			encountered[policy.ID] = true
+		}
+	}
+
+	return unique
 }

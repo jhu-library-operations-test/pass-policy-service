@@ -24,5 +24,5 @@ func (d *DSL) Resolve(variables VariablePinner) ([]Policy, error) {
 		policies = append(policies, resolved...)
 	}
 
-	return policies, nil
+	return uniquePolicies(policies), nil
 }

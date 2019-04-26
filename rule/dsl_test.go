@@ -33,6 +33,24 @@ func TestDSL(t *testing.T) {
 				]
 			},
 			{
+				"description": "Duplicate of first",
+				"policy-id": "${submission.foo.policy}",
+				"type": "funder",
+				"conditions": [
+					{
+						"endsWith": {
+							"good": "${submission.foo.policy}"
+						}
+					}
+				],
+				"repositories": [
+					{
+						"repository-id": "${policy.repository}",
+						"selected": true
+					}
+				]
+			},
+			{
 				"description": "Used for unit testing",
 				"policy-id": "http://example.org/policy",
 				"type": "funder",
