@@ -69,7 +69,7 @@ func TestFedoraIntegration(t *testing.T) {
 func invokePolicyService(t *testing.T, client web.Requester, endpoint string, submission string) []byte {
 
 	get, _ := http.NewRequest(http.MethodGet, policyServiceURI()+endpoint+"?submission="+url.QueryEscape(submission), nil)
-	get.Header.Set("Eppn", "someone@johnshopkins.edu")
+	get.Header.Set("Ajp_eppn", "someone@johnshopkins.edu")
 
 	resp, err := client.Do(get)
 	if err != nil {
