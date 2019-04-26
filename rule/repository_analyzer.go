@@ -8,15 +8,15 @@ import (
 // Requirements encapsulates deposit requirements by sorting repositories
 // into "required", 'oneOf', and 'optional' buckets
 type Requirements struct {
-	Required []Repository
-	OneOf    [][]Repository
-	Optional []Repository
+	Required []Repository   `json:"required"`
+	OneOf    [][]Repository `json:"one-of"`
+	Optional []Repository   `json:"optional"`
 }
 
-// Elide removes any repositories that are not in the keep list)
+// Keep removes any repositories that are not in the keep list)
 // Such repositories are presumed to have been deposited to by some means outside of pass.
 // For example,  for requirements OneOf: {a, b} with keep {a}, the result is Optional {a}
-func (r *Requirements) Elide(keep []Repository) *Requirements {
+func (r *Requirements) Keep(keep []Repository) *Requirements {
 
 	requirements := &Requirements{}
 
@@ -70,6 +70,25 @@ func (r *Requirements) Elide(keep []Repository) *Requirements {
 	}
 
 	return normalize(requirements)
+}
+
+// TranslateURIs applies the given function to all URIs (mutating them), and returns itself
+func (r *Requirements) TranslateURIs(replace func(string) (string, bool)) *Requirements {
+	for i := range r.Required {
+		r.Required[i].ID, _ = replace(r.Required[i].ID)
+	}
+
+	for i := range r.OneOf {
+		for j := range r.OneOf[i] {
+			r.OneOf[i][j].ID, _ = replace(r.OneOf[i][j].ID)
+		}
+	}
+
+	for i := range r.Optional {
+		r.Optional[i].ID, _ = replace(r.Optional[i].ID)
+	}
+
+	return r
 }
 
 // AnalyzeRequirements analyzes a list of policies, and returns

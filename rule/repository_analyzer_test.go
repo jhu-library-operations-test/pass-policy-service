@@ -204,7 +204,7 @@ func TestAnalyzeRequirements(t *testing.T) {
 	}
 }
 
-func TestElide(t *testing.T) {
+func TestKeep(t *testing.T) {
 	cases := []struct {
 		testName     string
 		keep         []rule.Repository
@@ -295,11 +295,53 @@ func TestElide(t *testing.T) {
 	for _, c := range cases {
 		c := c
 		t.Run(c.testName, func(t *testing.T) {
-			elided := c.requirements.Elide(c.keep)
+			elided := c.requirements.Keep(c.keep)
 			diffs := deep.Equal(elided, c.expected)
 			if len(diffs) > 0 {
 				t.Fatalf("did not get expected results: %s\n%+v", strings.Join(diffs, "\n"), elided)
 			}
 		})
+	}
+}
+
+func TestTranslate(t *testing.T) {
+	translated := (&rule.Requirements{
+		Required: []rule.Repository{
+			{ID: "a"},
+			{ID: "b"},
+		},
+		OneOf: [][]rule.Repository{{
+			{ID: "c"},
+			{ID: "d"},
+		}, {
+			{ID: "e"},
+			{ID: "f"},
+		}},
+		Optional: []rule.Repository{
+			{ID: "g"},
+		},
+	}).TranslateURIs(func(in string) (string, bool) {
+		return strings.ToUpper(in), false
+	})
+
+	diffs := deep.Equal(translated, &rule.Requirements{
+		Required: []rule.Repository{
+			{ID: "A"},
+			{ID: "B"},
+		},
+		OneOf: [][]rule.Repository{{
+			{ID: "C"},
+			{ID: "D"},
+		}, {
+			{ID: "E"},
+			{ID: "F"},
+		}},
+		Optional: []rule.Repository{
+			{ID: "G"},
+		},
+	})
+
+	if len(diffs) > 0 {
+		t.Fatal(diffs)
 	}
 }
