@@ -104,7 +104,7 @@ func TestPrivateWithPublic(t *testing.T) {
 			out:        "http://example.org/foo/path/to/whatever",
 			didReplace: true,
 		},
-	},{
+	}, {
 		testName: "relative URI no slash",
 		replace: web.BaseURIs{
 			Public:  "http://example.org/foo",

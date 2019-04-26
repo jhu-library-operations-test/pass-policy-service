@@ -2,7 +2,6 @@ package web
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/oa-pass/pass-policy-service/rule"
 	"github.com/pkg/errors"
@@ -11,7 +10,12 @@ import (
 type PolicyService struct {
 	Rules   rule.PolicyResolver
 	Fetcher rule.PassEntityFetcher
-	Replace map[string]string // URI prefixes and their replacements
+	Replace BaseURIReplacer
+}
+
+type requestHandler interface {
+	handleGet()
+	handlePost()
 }
 
 func NewPolicyService(rulesDoc []byte, fetcher rule.PassEntityFetcher) (service PolicyService, err error) {
@@ -26,27 +30,21 @@ func NewPolicyService(rulesDoc []byte, fetcher rule.PassEntityFetcher) (service 
 }
 
 func (s *PolicyService) RequestPolicies(w http.ResponseWriter, r *http.Request) {
+	s.doRequest(&policyRequest{s, r, w}, w, r)
+}
 
-	policyEndpoint := policyEndpoint{s}
+func (s *PolicyService) RequestRepositories(w http.ResponseWriter, r *http.Request) {
+	s.doRequest(&repositoryRequest{s, r, w}, w, r)
+}
 
+func (s *PolicyService) doRequest(handler requestHandler, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
 	switch r.Method {
 	case http.MethodGet:
-		policyEndpoint.handleGet(w, r)
+		handler.handleGet()
 	case http.MethodPost:
-		policyEndpoint.handlePost(w, r)
+		handler.handlePost()
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
-}
-
-func (s *PolicyService) replace(uri string) string {
-	for prefix, replacement := range s.Replace {
-		if strings.HasSuffix(uri, prefix) {
-			return strings.Replace(uri, prefix, replacement, 1)
-		}
-	}
-
-	return uri
 }
