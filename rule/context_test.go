@@ -152,6 +152,48 @@ func TestContextResolve(t *testing.T) {
 			}`,
 		},
 		expectedValue: []string{"a", "b", "c", "d", "e"},
+	}, {
+		testName: "traverse many ist objects no results",
+		varName:  "${submission.foo.bar.rhubarb}",
+		fetcher: map[string]string{
+			submissionURI: `{
+				"foo": [
+					"http:/example.org/foo/1",
+					"http:/example.org/foo/2"
+				] 
+			}`,
+			"http:/example.org/foo/1": `{
+				"bar": [
+					"http:/example.org/bar/1",
+					"http:/example.org/bar/2"
+				]
+			}`,
+			"http:/example.org/foo/2": `{
+				"bar": [
+					"http:/example.org/bar/1",
+					"http:/example.org/bar/3"
+				]
+			}`,
+			"http:/example.org/bar/1": `{
+				"nope": [
+					"a",
+					"b"
+				]
+			}`,
+			"http:/example.org/bar/2": `{
+				"nope": [
+					"b",
+					"c"
+				]
+			}`,
+			"http:/example.org/bar/3": `{
+				"nope": [
+					"d",
+					"e"
+				]
+			}`,
+		},
+		expectedValue: []string{},
 	}}
 
 	for _, c := range cases {

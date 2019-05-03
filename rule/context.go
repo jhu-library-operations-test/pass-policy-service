@@ -243,10 +243,6 @@ func (c *Context) extractValues(v variable, resolvedList []resolvedObject) error
 		}
 	}
 
-	if len(vals) == 0 {
-		return errors.Errorf("no values of %s have key %s", v.prev().segmentName, v.segment)
-	}
-
 	c.values[v.segmentName] = vals
 	c.values[v.segment] = vals // this is the shortcut ${properties}, instead of ${x.y.properties}
 
