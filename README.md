@@ -82,6 +82,12 @@ To build the policy service image, do
 
     docker-compose build
 
-ci is set up to automatically build and deploy an image to dockerhub upon commit to `master`, tagged as `:latest`.  For tags pushed to github, ci will automatically build and 
+ci is set up to automatically build and deploy an image to dockerhub upon commit to `master`, tagged as `:latest`.  For tags pushed to github, ci will automatically build and
 deploy an image whose tag matches the git tag.
+
+### Docker Configuration
+
+The only configuration is via the `POLICY_FILE` environment variable.  This points to a policy rules DSL file (accessible in the container, either built-in, or mounted)
+
+Built-in policy files include `docker.json` (default, works in the `pass-docker` environment), and `aws.json` (works in an AWS environment).
 
