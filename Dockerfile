@@ -2,11 +2,13 @@ FROM golang:1.12-alpine AS builder
 
 RUN apk update && apk add --no-cache git
 
-ENV  GO111MODULE=on
+ENV  GO111MODULE=on \
+     CGO_ENABLED=0 \
+     GOPROXY=https://proxy.golang.org/
 WORKDIR /root
 COPY . .
 RUN go generate ./... && \
-    CGO_ENABLED=0 go build ./cmd/pass-policy-service
+    go build ./cmd/pass-policy-service
 
 FROM alpine:3.9
 ENV POLICY_FILE=docker.json
