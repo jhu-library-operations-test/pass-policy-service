@@ -4,7 +4,11 @@
 
 Contains the PASS policy service, which provides an HTTP API for determining the policies applicable to a given Submission, as well as the repositories that must be deposited into in order to comply with the applicable policies.
 
-## Usage
+See the [Documentation for the API](web/README.md)
+
+## Installation
+
+The policy service is distributed and intended to be used as a [docker image](#Docker Image), but nevertheless can be used on a local machine if desired
 
 If you have go installed, you can simply install the `pass-policy-service` executable via
 
@@ -30,8 +34,8 @@ If not successful, it will print out validation errors and terminate with a nonz
 
 ## Configuration
 
-Configuration is provided via a policy rules DSL file.  This is a JSON document that containes rules which govern which policies apply to a given
-submission.  Documentation can be found in [its concrete design doc](https://docs.google.com/document/d/1cPNN9TFUCLX-4yVoRuhmM0Vcrh3WYWNs-rwAszuJWXk/edit#heading=h.sae8awmp6ter)
+Configuration is provided via a policy rules DSL file.  This is a JSON document that contains rules which govern which policies apply to a given
+submission.  Documentation can be found in [the rule DSL docs](rule/README.md)
 
 An example of such configuration file can be found in the [test data](rule/testdata/good.json)
 
@@ -73,8 +77,6 @@ Then, run with integration tests
 
 ## Docker Image
 
-(note: currently the docker image for the policy service intentionally exits immediately in error, because it has not been implemented yet)
-
 There is a `Dockerfile` which defines an image containing the policy service, and a `docker-compose.yml` for building/pushing the image, as well
 as running Fedora for the sake of integration tests.
 
@@ -82,12 +84,19 @@ To build the policy service image, do
 
     docker-compose build
 
-ci is set up to automatically build and deploy an image to dockerhub upon commit to `master`, tagged as `:latest`.  For tags pushed to github, ci will automatically build and
+ci is set up to automatically build and deploy an image to docker hub upon commit to `master`, tagged as `:latest`.  For tags pushed to GitHub, ci will automatically build and
 deploy an image whose tag matches the git tag.
 
 ### Docker Configuration
 
-The only configuration is via the `POLICY_FILE` environment variable.  This points to a policy rules DSL file (accessible in the container, either built-in, or mounted)
+The `POLICY_FILE` environment variable.  This points to a policy rules DSL file (accessible in the container, either built-in, or mounted)
 
 Built-in policy files include `docker.json` (default, works in the `pass-docker` environment), and `aws.json` (works in an AWS environment).
 
+Additional configuration is achieved via the following environment variables:
+
+* `PASS_EXTERNAL_FEDORA_BASEURL`: External (public) Fedora PASS baseurl
+* `PASS_FEDORA_BASEURL`: Internal (private) Fedora PASS baseurl
+* `PASS_FEDORA_USER`: Username for basic auth to Fedora
+* `PASS_FEDORA_PASSWORD`: Password for basic auth to Fedora
+* `POLICY_SERVICE_PORT`: Port for policy service port (default is 0 for random)
