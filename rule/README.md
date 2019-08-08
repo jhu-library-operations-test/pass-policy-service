@@ -72,7 +72,12 @@ Policy inclusion rules are JSON objects containing the following fields:
 * `policy-id`:  a string containing a a single policy URI, or a variable substitution resulting in one or more policy URIs
   * In the case of a variable substitution resulting in many URIs, it is equivalent to creating multiple policy rules, each one containing a single policy-id from that list.  
 repositories:  contains a list of repository description JSON objects, specifying which repositories satisfy the given policy.
-* `condition`:  Optional.  JSON object describing a condition where the policy is included only if the condition evaluates to true.  If this field is not present, it is presumed that inclusion of the policy is unconditional
+* `condition`:  Optional.  JSON object describing a condition where the policy is included only if the condition evaluates to true.  If this field is not present, it is presumed that inclusion of the policy is unconditional.  See the schema for more details, but conditions include:
+  * `equals`: true if two strings are equal
+  * `endsWith`: true if a string ends with another
+  * `contains`: true if a string contains another as a substring
+  * `anyOf`: true if any of the given list of conditions are true
+  * `noneOf`: true if none of the given list of conditions are true
 
 Repositories are JSON objects with the following fields:
 

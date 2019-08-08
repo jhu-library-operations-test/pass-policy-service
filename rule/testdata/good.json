@@ -30,6 +30,15 @@
                     "endsWith": {
                         "@johnshopkins.edu": "${header.Eppn}"
                     }
+                },
+                {
+                    "noneOf": [
+                        {
+                            "contains": {
+                                "foo": "${header.Foo}"
+                            }
+                        }
+                    ]
                 }
             ],
             "repositories": [

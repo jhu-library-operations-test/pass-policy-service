@@ -33,11 +33,33 @@ func TestConditionApply(t *testing.T) {
 			]
 		}`,
 	}, {
+		expected: true,
+		json: `{
+			"noneOf": [
+				{"equals":{"one": "two"}},
+				{"endsWith":{"one": "goner"}}
+			]
+		}`,
+	}, {
+		expected: false,
+		json: `{
+			"noneOf": [
+				{"equals":{"one": "two"}},
+				{"endsWith":{"one": "gone"}}
+			]
+		}`,
+	}, {
 		expected: false,
 		json:     `{"equals":{"one": "two"}}`,
 	}, {
 		expected: true,
 		json:     `{"equals":{"two": "two"}}`,
+	}, {
+		expected: true,
+		json:     `{"contains": {"FACULTY": "STAFF,FACULTY,COW"}}`,
+	}, {
+		expected: false,
+		json:     `{"contains": {"BOVINE": "STAFF,FACULTY,COW"}}`,
 	}, {
 		expected: true,
 		json: `{

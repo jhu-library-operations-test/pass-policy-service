@@ -79,6 +79,9 @@
                                 },
                                 {
                                     "$ref": "#/definitions/anyOf"
+                                },
+                                {
+                                    "$ref": "#/definitions/noneOf"
                                 }
                             ]
                         }
@@ -127,6 +130,25 @@
                             }
                         }
                     }
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "contains"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "contains": {
+                            "type": "object",
+                            "title": "Contains",
+                            "description": "Evaluates to 'true' when the given value contains the key",
+                            "patternProperties": {
+                                "^.+$": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
                 }
             ]
         },
@@ -138,6 +160,21 @@
             "additionalProperties": false,
             "properties": {
                 "anyOf": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/condition"
+                    }
+                }
+            }
+        },
+        "noneOf": {
+            "type": "object",
+            "title": "None Of",
+            "description": "Evaluates to true when none the conditions listed within evaluate to true",
+            "required": ["noneOf"],
+            "additionalProperties": false,
+            "properties": {
+                "noneOf": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/condition"
