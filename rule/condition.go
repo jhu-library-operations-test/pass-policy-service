@@ -25,6 +25,8 @@ func init() {
 		"endsWith": endsWith,
 		"equals":   equals,
 		"anyOf":    anyOf,
+		"noneOf":   noneOf,
+		"contains": contains,
 	}
 }
 
@@ -52,6 +54,11 @@ func (c Condition) Apply(variables VariableResolver) (bool, error) {
 func endsWith(fromCondition interface{}, variables VariableResolver) (bool, error) {
 
 	return eachPair(fromCondition, variables, strings.HasSuffix)
+}
+
+func contains(fromCondition interface{}, variables VariableResolver) (bool, error) {
+
+	return eachPair(fromCondition, variables, strings.Contains)
 }
 
 func equals(fromCondition interface{}, variables VariableResolver) (bool, error) {
@@ -84,6 +91,11 @@ func anyOf(arg interface{}, variables VariableResolver) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func noneOf(arg interface{}, variables VariableResolver) (bool, error) {
+	passes, err := anyOf(arg, variables)
+	return !passes, err
 }
 
 func eachPair(src interface{}, variables VariableResolver, test func(string, string) bool) (passes bool, err error) {

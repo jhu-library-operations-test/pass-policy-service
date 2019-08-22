@@ -15,8 +15,9 @@ services:
 install: true
 
 script:
-  - go build ./...
+  - go install ./...
   - go test ./...
+  - pass-policy-service validate policies/*.json
   - docker-compose build policyservice
   - docker-compose pull fcrepo && docker-compose up -d && bash ./scripts/wait_for_docker.sh
   - go test -v -tags=integration ./... || docker logs policyservice 

@@ -22,20 +22,42 @@
             ]
         },
         {
-            "description": "Members of the JHU community must deposit into JScholarship, or some other repository.",
-            "policy-id": "policies/",
+            "description": "Faculty members must deposit into DASH",
+            "policy-id": "/policies/f9/b6/01/25/f9b60125-662d-4e03-a7b0-eec0df2b50de",
             "type": "institution",
             "conditions": [
                 {
                     "endsWith": {
-                        "@johnshopkins.edu": "${header.Eppn}"
+                        "@harvard.edu": "${header.Ajp_eppn}"
+                    }
+                },
+                {
+                    "contains": {
+                        "FACULTY": "${header.Ajp_affiliation}"
+                    }
+                }
+            ],
+            "repositories": [
+                {
+                    "repository-id": "/repositories/93/c5/ff/37/93c5ff37-ca2b-4652-a2af-3b6794ff8790"
+                }
+            ]
+        },
+        {
+            "description": "Non-faculty members may optionally deposit into DASH",
+            "policy-id": "/policies/f9/b6/01/25/f9b60125-662d-4e03-a7b0-eec0df2b50de",
+            "type": "institution",
+            "conditions": [
+                {
+                    "endsWith": {
+                        "@harvard.edu": "${header.Ajp_eppn}"
                     }
                 },
                 {
                     "noneOf": [
                         {
                             "contains": {
-                                "foo": "${header.Foo}"
+                                "FACULTY": "${header.Ajp_Affiliation}"
                             }
                         }
                     ]
@@ -43,7 +65,7 @@
             ],
             "repositories": [
                 {
-                    "repository-id": "http://passl.local/fcrepo/rest/repositories/j10p",
+                    "repository-id": "/repositories/93/c5/ff/37/93c5ff37-ca2b-4652-a2af-3b6794ff8790",
                     "selected": true
                 },
                 {
