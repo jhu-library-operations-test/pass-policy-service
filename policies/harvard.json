@@ -33,7 +33,7 @@
                 },
                 {
                     "contains": {
-                        "FACULTY": "${header.Ajp_Affiliation}"
+                        "FACULTY": "${header.Ajp_affiliation}"
                     }
                 }
             ],
